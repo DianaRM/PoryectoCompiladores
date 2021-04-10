@@ -55,6 +55,7 @@ class AnalizadorLexico( val codigoFuente: String)  {
             if (esOperadorRelacional()) continue
             if (esOperadorLogico()) continue
             if (esOperadorDeAsignacion()) continue
+            if (esOperadorDeIncrementoDecremento()) continue
 
             listaTokens.add(Token(Categoria.DESCONOCIDO, "" + caracterActual, filaActual, colActual))
             obtenerSgteCaracter()
@@ -398,6 +399,53 @@ class AnalizadorLexico( val codigoFuente: String)  {
             } else {
                 listaTokens.add(Token(Categoria.OPERADOR_ASIGNACION, palabra, fila, columna))
                 return true
+            }
+        }
+        return false
+    }
+
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Operador de Incremento y Decremento, y de ser asi, crea un token
+     * con esta categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esOperadorDeIncrementoDecremento(): Boolean {
+        var palabra: String = ""
+        val fila = filaActual
+        val columna = colActual
+        val aux = posActual
+        if (caracterActual == '+') {
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == '+') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, palabra, fila, columna))
+                return true
+            } else {
+                posActual = aux
+                colActual = columna
+                filaActual = fila
+                caracterActual = codigoFuente[posActual]
+                return false
+            }
+        } else if (caracterActual == '-') {
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == '-') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, palabra, fila, columna))
+                return true
+            } else {
+                posActual = aux
+                colActual = columna
+                filaActual = fila
+                caracterActual = codigoFuente[posActual]
+                return false
             }
         }
         return false
