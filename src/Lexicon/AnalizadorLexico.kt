@@ -56,6 +56,13 @@ class AnalizadorLexico( val codigoFuente: String)  {
             if (esOperadorLogico()) continue
             if (esOperadorDeAsignacion()) continue
             if (esOperadorDeIncrementoDecremento()) continue
+            if (esParentesisApertura()) continue
+            if (esParentesisCierre()) continue
+            if (esLlaveApertura()) continue
+            if (esLlaveCierre()) continue
+            if (esCorcheteApertura()) continue
+            if (esCorcheteCierre()) continue
+            if (esTerminal()) continue
 
             listaTokens.add(Token(Categoria.DESCONOCIDO, "" + caracterActual, filaActual, colActual))
             obtenerSgteCaracter()
@@ -447,6 +454,118 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 caracterActual = codigoFuente[posActual]
                 return false
             }
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Parentesis de Apertura, y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esParentesisApertura(): Boolean {
+        if (caracterActual == '(') {
+            listaTokens.add(Token(Categoria.PARENTESIS_APERTURA, "(", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Parentesis de Cierre, y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esParentesisCierre(): Boolean {
+        if (caracterActual == ')') {
+            listaTokens.add(Token(Categoria.PARENTESIS_CIERRE, ")", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Llave de Apertura, y de ser asi, crea un token con esta categoria y
+     * con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esLlaveApertura(): Boolean {
+        if (caracterActual == '{') {
+            listaTokens.add(Token(Categoria.LLAVE_APERTURA, "{", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Llave de Cierre, y de ser asi, crea un token con esta categoria y
+     * con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esLlaveCierre(): Boolean {
+        if (caracterActual == '}') {
+            listaTokens.add(Token(Categoria.LLAVE_CIERRE, "}", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Corchete de Apertura, y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esCorcheteApertura(): Boolean {
+        if (caracterActual == '[') {
+            listaTokens.add(Token(Categoria.CORCHETE_APERTURA, "[", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Corchete de Cierre, y de ser asi, crea un token con esta categoria
+     * y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esCorcheteCierre(): Boolean {
+        if (caracterActual == ']') {
+            listaTokens.add(Token(Categoria.CORCHETE_CIERRE, "]", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Terminal(Fin de sentencia), y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esTerminal(): Boolean {
+        if (caracterActual == ';') {
+            listaTokens.add(Token(Categoria.TERMINAL, ";", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
         }
         return false
     }
