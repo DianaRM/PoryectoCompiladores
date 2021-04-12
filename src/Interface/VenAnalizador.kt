@@ -1,4 +1,0 @@
-package Interface
-
-class VenAnalizador {
-}

@@ -1,8 +1,6 @@
-package Lexicon
+package lexico
 
 import lexicon.Categoria
-import lexicon.Token
-import java.util.ArrayList
 
 /**
  * Clase que se encarga de analizar el codigo fuente y extraer cada uno de los
@@ -569,6 +567,326 @@ class AnalizadorLexico( val codigoFuente: String)  {
         }
         return false
     }
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Separador, y de ser asi, crea un token con esta categoria y con lo
+     * que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esSeparador(): Boolean {
+        if (caracterActual == ',') {
+            listaTokens.add(Token(Categoria.SEPARADOR, ",", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Hexadecimal, y de ser asi, crea un token con esta categoria y con
+     * lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esHexadecimal(): Boolean {
+        if (caracterActual == '°') {
+            var palabra: String = ""
+            val fila = filaActual
+            val columna = colActual
+            val aux = posActual
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == 'A' || caracterActual == 'B' || caracterActual == 'C' || caracterActual == 'D' || caracterActual == 'E' || caracterActual == 'F' || Character.isDigit(caracterActual)) {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                while (caracterActual == 'A' || caracterActual == 'B' || caracterActual == 'C' || caracterActual == 'D' || caracterActual == 'E' || caracterActual == 'F' || Character.isDigit(caracterActual)) {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                }
+                listaTokens.add(Token(Categoria.HEXADECIMAL, palabra, fila, columna))
+                return true
+            } else {
+                posActual = aux
+                colActual = columna
+                filaActual = fila
+                caracterActual = codigoFuente[posActual]
+                return false
+            }
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Cadena de Caracteres, y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esCadenaDeCaracteres(): Boolean {
+        if (caracterActual == '~') {
+            var palabra: String = ""
+            val fila = filaActual
+            val columna = colActual
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            while (caracterActual != '~') {
+                if (caracterActual == finCodigo) {
+                    listaDeErrores.add(Error(fila, columna,
+                            " El simbolo '~' de apertura de la cadena de caracteres esta abierto pero nunca fue cerrado"))
+                    return true
+                } else if (caracterActual == '\\') {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                    if (caracterActual == '~' || caracterActual == 'b' || caracterActual == 't' || caracterActual == 'f' || caracterActual == 'n' || caracterActual == 'r' || caracterActual == '\\') {
+                        palabra += caracterActual
+                        obtenerSgteCaracter()
+                    } else {
+                        listaDeErrores.add(Error(fila, columna,
+                                " Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t " + '\\'
+                                        + "n " + '\\' + "f " + '\\' + "r " + '\\' + "~ " + ")"))
+                        listaTokens.add(Token(
+                                Categoria.ERROR, (" Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\'
+                                + "t " + '\\' + "n " + '\\' + "f " + '\\' + "r " + '\\' + "~ " + ")"),
+                                fila, columna))
+                    }
+                } else {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                }
+            }
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            listaTokens.add(Token(Categoria.CADENA_CARACTERES, palabra, fila, columna))
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Caracter, y de ser asi, crea un token con esta categoria y con lo
+     * que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esCaracter(): Boolean {
+        if (caracterActual == '$') {
+            var palabra = ""
+            val fila = filaActual
+            val columna = colActual
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == finCodigo) {
+                listaTokens.add(Token(Categoria.ERROR,
+                        "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
+                        columna))
+                listaDeErrores.add(Error(fila, columna,
+                        " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                return true
+            } else if (caracterActual == '\\') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                if (caracterActual == finCodigo) {
+                    listaTokens.add(Token(Categoria.ERROR,
+                            "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
+                            fila, columna))
+                    listaDeErrores.add(Error(fila, columna,
+                            " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                    return true
+                } else if ((caracterActual == 'n') || (caracterActual == '$') || (caracterActual == 't'
+                                ) || (caracterActual == 'r') || (caracterActual == 'f') || (caracterActual == 'b'
+                                ) || (caracterActual == '\\')) {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                    if (caracterActual == '$') {
+                        palabra += caracterActual
+                        obtenerSgteCaracter()
+                        listaTokens.add(Token(Categoria.CARACTER, palabra, fila, columna))
+                        return true
+                    } else {
+                        listaTokens.add(Token(Categoria.ERROR, (palabra
+                                + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
+                                columna))
+                        listaDeErrores.add(Error(fila, columna,
+                                " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                        return true
+                    }
+                } else {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                    if (caracterActual == '$') {
+                        listaTokens.add(Token(Categoria.ERROR,
+                                (palabra + " Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t "
+                                        + '\\' + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")"),
+                                fila, columna))
+                        listaDeErrores.add(Error(fila, columna,
+                                (" Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t " + '\\'
+                                        + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")")))
+                        obtenerSgteCaracter()
+                        return true
+                    } else {
+                        listaTokens.add(Token(Categoria.ERROR, (palabra
+                                + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
+                                columna))
+                        listaDeErrores.add(Error(fila, columna,
+                                " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                        obtenerSgteCaracter()
+                        return true
+                    }
+                }
+            } else if (caracterActual == '$') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                listaTokens.add(Token(Categoria.ERROR, "$palabra El caracter esta vacio", fila, columna))
+                return true
+            } else {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                if (caracterActual == finCodigo) {
+                    listaTokens.add(Token(Categoria.ERROR,
+                            "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
+                            fila, columna))
+                    return true
+                } else if (caracterActual == '$') {
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                    listaTokens.add(Token(Categoria.CARACTER, palabra, fila, columna))
+                    return true
+                }
+                listaTokens.add(Token(Categoria.ERROR,
+                        "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
+                        columna))
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria comentario de linea, y de ser asi, crea un token con esta categoria
+     * y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esComentarioDeLinea(): Boolean {
+        if (caracterActual == '¬') {
+            var palabra: String = ""
+            val fila = filaActual
+            val columna = colActual
+            val aux = posActual
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == '¬') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                while (caracterActual != '\n') {
+                    if (caracterActual == finCodigo) {
+                        listaTokens.add(Token(Categoria.COMENTARIO_LINEA, palabra, fila, columna))
+                        return true
+                    }
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                }
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                listaTokens.add(Token(Categoria.COMENTARIO_LINEA, palabra, fila, columna))
+                return true
+            } else {
+                posActual = aux
+                colActual = columna
+                filaActual = fila
+                caracterActual = codigoFuente[posActual]
+                return false
+            }
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Comentario de bloque, y de ser asi, crea un token con esta
+     * categoria y con lo que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esComentarioDeBloque(): Boolean {
+        if (caracterActual == '¬') {
+            var palabra = ""
+            val fila = filaActual
+            val columna = colActual
+            val aux = posActual
+            palabra += caracterActual
+            obtenerSgteCaracter()
+            if (caracterActual == '*') {
+                palabra += caracterActual
+                obtenerSgteCaracter()
+                while (caracterActual != finCodigo) {
+                    if (caracterActual == '*') {
+                        palabra += caracterActual
+                        obtenerSgteCaracter()
+                        if (caracterActual == '¬') {
+                            palabra += caracterActual
+                            obtenerSgteCaracter()
+                            listaTokens.add(Token(Categoria.COMENTARIO_BLOQUE, palabra, fila, columna))
+                            return true
+                        }
+                        palabra += caracterActual
+                        obtenerSgteCaracter()
+                    }
+                    palabra += caracterActual
+                    obtenerSgteCaracter()
+                }
+                listaTokens.add(Token(Categoria.ERROR,
+                        "$palabra El comentario de bloque fue abierto pero nunca fue cerrado", fila, columna))
+                listaDeErrores
+                        .add(Error(fila, columna, " El comentario de bloque fue abierto pero nunca fue cerrado"))
+                return true
+            } else {
+                posActual = aux
+                colActual = columna
+                filaActual = fila
+                caracterActual = codigoFuente[posActual]
+                return false
+            }
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria Dos_puntos, y de ser asi, crea un token con esta categoria y con lo
+     * que lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esDosPuntos(): Boolean {
+        if (caracterActual == ':') {
+            listaTokens.add(Token(Categoria.DOS_PUNTOS, ":", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
+
+    /**
+     * metodo que determina si los caracteres que se analizan pertenecen a la
+     * categoria puntos, y de ser asi, crea un token con esta categoria y con lo que
+     * lleve concatenado hasta el momento
+     *
+     * @return true si pertenece a esta categoria, false en caso contrario
+     */
+    fun esPunto(): Boolean {
+        if (caracterActual == '.') {
+            listaTokens.add(Token(Categoria.PUNTO, ".", filaActual, colActual))
+            obtenerSgteCaracter()
+            return true
+        }
+        return false
+    }
 
     ///////////////////////////////////// METODOS
     ///////////////////////////////////// AUXILIARES/////////////////////////////////////////////////
@@ -590,5 +908,13 @@ class AnalizadorLexico( val codigoFuente: String)  {
             caracterActual = finCodigo
         }
     }
+
+    /**
+     * @return lista de Tokens
+     */
+    fun getListaTokens(): ArrayList<Token> {
+        return listaTokens
+    }
+
 
 }

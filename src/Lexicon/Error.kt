@@ -1,4 +1,0 @@
-package Lexicon
-
-class Error {
-}

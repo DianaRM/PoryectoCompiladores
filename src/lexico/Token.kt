@@ -1,13 +1,14 @@
-package lexicon
+package lexico
 
-import java.util.*
+import lexicon.Categoria
+
 
 /**
  * Clase que representa la categoria a la que pertence un simbolo
  *
  * @author Esthefania Lemus - Diana Ramirez - Cristian Bonilla
  */
-class Token( var categoria: Categoria, var lexema: String, var fila: Int, var columna: Int) {
+class Token(var categoria: Categoria, var lexema: String, var fila: Int, var columna: Int) {
 
 
     override fun toString(): String {
