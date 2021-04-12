@@ -11,7 +11,7 @@ import lexicon.Categoria
  */
 class AnalizadorLexico( val codigoFuente: String)  {
 
-    private val listaTokens: ArrayList<Token>
+    val listaTokens: ArrayList<Token>
     private var caracterActual: Char
     private val finCodigo: Char
     private var posActual = 0
@@ -61,6 +61,14 @@ class AnalizadorLexico( val codigoFuente: String)  {
             if (esCorcheteApertura()) continue
             if (esCorcheteCierre()) continue
             if (esTerminal()) continue
+            if (esSeparador()) continue
+            if (esCadenaDeCaracteres()) continue
+            if (esComentarioDeLinea()) continue
+            if (esComentarioDeBloque()) continue
+            if (esDosPuntos()) continue
+            if (esPunto()) continue
+            if (esCaracter()) continue
+
 
             listaTokens.add(Token(Categoria.DESCONOCIDO, "" + caracterActual, filaActual, colActual))
             obtenerSgteCaracter()
@@ -110,6 +118,11 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esReal(): Boolean {
         if (caracterActual == '.') {
+            if(posActual == 0){
+                if(codigoFuente.length < 2){
+                    return false
+                }
+            }
             if (!Character.isDigit(codigoFuente[posActual + 1])) {
                 return false
             }
@@ -184,8 +197,16 @@ class AnalizadorLexico( val codigoFuente: String)  {
                     palabra += caracterActual
                     obtenerSgteCaracter()
                 }
-                listaTokens.add(Token(Categoria.IDENTIFICADOR, palabra, fila, columna))
-                return true
+
+                if(palabra.length <= 10) {
+                    listaTokens.add(Token(Categoria.IDENTIFICADOR, palabra, fila, columna))
+                    return true
+                }else{
+                    posActual = aux
+                    colActual = columna
+                    filaActual = fila
+                    caracterActual = codigoFuente[posActual]
+                }
             }
         }
         return false
@@ -907,13 +928,6 @@ class AnalizadorLexico( val codigoFuente: String)  {
         } else {
             caracterActual = finCodigo
         }
-    }
-
-    /**
-     * @return lista de Tokens
-     */
-    fun getListaTokens(): ArrayList<Token> {
-        return listaTokens
     }
 
 

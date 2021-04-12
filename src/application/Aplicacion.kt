@@ -10,7 +10,6 @@ import javafx.stage.Stage
 
 class Aplicacion: Application() {
     override fun start(primaryStage: Stage?) {
-        TODO("Not yet implemented")
 
         val loader = FXMLLoader(Aplicacion :: class.java.getResource("/inicio.fxml"))
         val parent:Parent = loader.load()
