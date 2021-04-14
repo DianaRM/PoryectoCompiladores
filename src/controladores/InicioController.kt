@@ -15,6 +15,10 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URL
 import java.util.*
+import javafx.collections.ObservableList
+
+
+
 
 class InicioController : Initializable {
 
@@ -39,6 +43,7 @@ class InicioController : Initializable {
 
     @FXML
     private lateinit var txtAutomata: Label
+
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
 

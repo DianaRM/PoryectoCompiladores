@@ -47,6 +47,45 @@
                      </children></AnchorPane>
             </content>
           </Tab>
+            <Tab text="Palabras Reservadas">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label alignment="CENTER" layoutX="62.0" layoutY="34.0" prefHeight="34.0" prefWidth="249.0" text="Palabras Reservadas ">
+                           <font>
+                              <Font name="System Bold" size="23.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="73.0" layoutY="99.0" text="Excepción" />
+                        <Label layoutX="73.0" layoutY="125.0" text="Entero" />
+                        <Label layoutX="73.0" layoutY="151.0" text="Real" />
+                        <Label layoutX="72.0" layoutY="178.0" text="Bool" />
+                        <Label layoutX="71.0" layoutY="206.0" text="Void" />
+                        <Label layoutX="70.0" layoutY="234.0" text="String" />
+                        <Label layoutX="71.0" layoutY="262.0" text="Char" />
+                        <Label layoutX="69.0" layoutY="287.0" text="Para" />
+                        <Label layoutX="67.0" layoutY="314.0" text="mientrasQue" />
+                        <Label layoutX="66.0" layoutY="341.0" text="Privado" />
+                        <Label layoutX="67.0" layoutY="365.0" text="Publico" />
+                        <Label layoutX="67.0" layoutY="393.0" text="Paquete" />
+                        <Label layoutX="67.0" layoutY="422.0" text="importar" />
+                        <Label layoutX="67.0" layoutY="454.0" text="Clase" />
+                        <Label layoutX="205.0" layoutY="99.0" text="Retorno" />
+                        <Label layoutX="205.0" layoutY="125.0" text="Break" />
+                        <Label layoutX="206.0" layoutY="151.0" text="metodo" />
+                        <Label layoutX="206.0" layoutY="178.0" text="True" />
+                        <Label layoutX="206.0" layoutY="206.0" text="False" />
+                        <Label layoutX="204.0" layoutY="234.0" text="invo" />
+                        <Label layoutX="204.0" layoutY="262.0" text="null" />
+                        <Label layoutX="206.0" layoutY="287.0" text="leer" />
+                        <Label layoutX="202.0" layoutY="314.0" text="imprimir" />
+                        <Label layoutX="200.0" layoutY="341.0" text="arreglo" />
+                        <Label layoutX="200.0" layoutY="365.0" text="si?" />
+                        <Label layoutX="200.0" layoutY="393.0" text="sino!" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
    </children>
