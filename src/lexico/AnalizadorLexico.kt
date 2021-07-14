@@ -1,6 +1,6 @@
 package lexico
 
-import lexicon.Categoria
+import lexico.Categoria
 
 /**
  * Clase que se encarga de analizar el codigo fuente y extraer cada uno de los
@@ -9,15 +9,15 @@ import lexicon.Categoria
  *
  * @author Esthefania Lemus - Diana Ramirez - Cristian Bonilla
  */
-class AnalizadorLexico( val codigoFuente: String)  {
+class AnalizadorLexico(val codigoFuente: String) {
 
-    val listaTokens: ArrayList<Token>
+    val listaTokens: ArrayList<Token> = ArrayList<Token>()
     private var caracterActual: Char
     private val finCodigo: Char
     private var posActual = 0
     private var colActual = 0
     private var filaActual = 0
-    private val palabrasReservadas = arrayOf("Excepcion", "Entero", "Real", "Bool", "Void", "String", "Char", "Para", "mientrasQue",
+    private val lexemasReservadas = arrayOf("Excepcion", "Entero", "Real", "Bool", "Void", "String", "Char", "Para", "mientrasQue",
             "Privado", "Publico", "Paquete", "importar", "Clase", "Retorno", "Break", "metodo", "True", "False", "invo",
             "null", "leer", "imprimir", "arreglo", "si?", "sino!")
     var listaDeErrores: ArrayList<Error>
@@ -28,7 +28,6 @@ class AnalizadorLexico( val codigoFuente: String)  {
      *
      */
     init {
-        listaTokens = ArrayList<Token>()
         caracterActual = codigoFuente[posActual]
         finCodigo = 0.toChar()
         listaDeErrores = ArrayList()
@@ -85,14 +84,14 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esEntero(): Boolean {
         if (Character.isDigit(caracterActual)) {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             while (Character.isDigit(caracterActual)) {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
             }
             if (caracterActual == '.') {
@@ -101,14 +100,17 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 filaActual = fila
                 caracterActual = codigoFuente[posActual]
                 return false
-            } else {
-                listaTokens.add(Token(Categoria.ENTERO, palabra, fila, columna))
+            } else if (caracterActual == finCodigo || caracterActual == ';') {
+                listaTokens.add(Token(Categoria.ENTERO, lexema, fila, columna))
                 return true
+            } else {
+                return false
             }
         }
         // RI
         return false
     }
+
     /**
      * metodo que determina si los caracteres que se analizan pertenecen a la
      * categoria Numero Real, y de ser asi, crea un token con esta categoria y con
@@ -117,55 +119,51 @@ class AnalizadorLexico( val codigoFuente: String)  {
      * @return true si pertenece a esta categoria, false en caso contrario
      */
     fun esReal(): Boolean {
-        if (caracterActual == '.') {
-            if(posActual == 0){
-                if(codigoFuente.length < 2){
+        if (caracterActual == '.' || caracterActual.isDigit()) {
+            val aux = posActual
+            var lexema: String = ""
+            val fila = filaActual
+            val columna = colActual
+            lexema += caracterActual
+
+            if (caracterActual.isDigit()) {
+                obtenerSgteCaracter()
+
+                while (caracterActual.isDigit()) {
+                    lexema += caracterActual
+                    obtenerSgteCaracter()
+                }
+
+                if (caracterActual != '.' && caracterActual != ';') {
+                    posActual = aux
+                    colActual = columna
+                    filaActual = fila
+                    caracterActual = codigoFuente[posActual]
+                    return false
+                }
+            } else {
+                obtenerSgteCaracter()
+                if (!caracterActual.isDigit()) {
+                    posActual = aux
+                    colActual = columna
+                    filaActual = fila
+                    caracterActual = codigoFuente[posActual]
                     return false
                 }
             }
-            if (!Character.isDigit(codigoFuente[posActual + 1])) {
-                return false
-            }
-            var palabra: String = ""
-            val fila = filaActual
-            val columna = colActual
-            palabra += caracterActual
+
+            lexema += caracterActual
             obtenerSgteCaracter()
-            while (Character.isDigit(caracterActual)) {
-                palabra += caracterActual
+
+            while (caracterActual.isDigit()) {
+                lexema += caracterActual
                 obtenerSgteCaracter()
             }
-            listaTokens.add(Token(Categoria.DECIMAL, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.DECIMAL, lexema, fila, columna))
             return true
-        } else if (Character.isDigit(caracterActual)) {
-            var palabra: String = ""
-            val fila = filaActual
-            val columna = colActual
-            val aux = posActual
-            palabra += caracterActual
-            obtenerSgteCaracter()
-            while (Character.isDigit(caracterActual)) {
-                palabra += caracterActual
-                obtenerSgteCaracter()
-            }
-            if (caracterActual != '.') {
-                posActual = aux
-                colActual = columna
-                filaActual = fila
-                caracterActual = codigoFuente[posActual]
-                return false
-            } else {
-                palabra += caracterActual
-                obtenerSgteCaracter()
-                while (Character.isDigit(caracterActual)) {
-                    palabra += caracterActual
-                    obtenerSgteCaracter()
-                }
-                listaTokens.add(Token(Categoria.DECIMAL, palabra, fila, columna))
-                return true
-            }
+        } else {
+            return false
         }
-        return false
     }
 
     /**
@@ -177,11 +175,11 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esIdentificador(): Boolean {
         if (caracterActual == '#') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (!(Character.isDigit(caracterActual) || Character.isLetter(caracterActual) || caracterActual == '_')) {
                 posActual = aux
@@ -190,47 +188,58 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 caracterActual = codigoFuente[posActual]
                 return false
             } else {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
                 while (Character.isDigit(caracterActual) || Character.isLetter(caracterActual)
                         || caracterActual == '_') {
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                 }
 
-                if(palabra.length <= 10) {
-                    listaTokens.add(Token(Categoria.IDENTIFICADOR, palabra, fila, columna))
+                if (lexema.length <= 10) {
+                    listaTokens.add(Token(Categoria.IDENTIFICADOR, lexema, fila, columna))
                     return true
-                }else{
+                } else {
                     posActual = aux
                     colActual = columna
                     filaActual = fila
                     caracterActual = codigoFuente[posActual]
+                    listaDeErrores.add(lexico.Error(filaActual, colActual, "El identificador tiene mas de 10 letras"))
+                    return false
                 }
             }
         }
         return false
     }
+
     /**
      * metodo que determina si los caracteres que se analizan pertenecen a la
-     * categoria Palabra Reservada, y de ser asi, crea un token con esta categoria y
+     * categoria lexema Reservada, y de ser asi, crea un token con esta categoria y
      * con lo que lleve concatenado hasta el momento
      *
-     * Lista de palabras reservadas: Entero, Real, Para, Mientras, Privado, Publico,
+     * Lista de lexemas reservadas: Entero, Real, Para, Mientras, Privado, Publico,
      * Paquete, Importar, Clase, Return, Break
      *
      * @return true si pertenece a esta categoria, false en caso contrario
      */
     fun esReservada(): Boolean {
-        for (i in palabrasReservadas.indices) {
-            if (posActual + palabrasReservadas[i].length <= codigoFuente.length && (palabrasReservadas[i]
-                            == codigoFuente.substring(posActual, posActual + palabrasReservadas[i].length))) {
-                listaTokens.add(Token(Categoria.RESERVADA, palabrasReservadas[i], filaActual, colActual))
-                colActual += palabrasReservadas[i].length
-                posActual += palabrasReservadas[i].length - 1
+
+        val aux = posActual
+        val columna = colActual
+        val fila = filaActual
+
+        var lexema = ""
+        if (caracterActual.isLetter()) {
+            lexema += caracterActual
+            obtenerSgteCaracter()
+            while (caracterActual.isLetter()) {
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                return true
             }
+        }
+        if(lexemasReservadas.contains(lexema)){
+            listaTokens.add(Token(Categoria.RESERVADA,lexema,fila,columna))
+            return true
         }
         return false
     }
@@ -249,12 +258,12 @@ class AnalizadorLexico( val codigoFuente: String)  {
                     return false
                 }
             }
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, lexema, fila, columna))
             return true
         } else if (caracterActual == '-') {
             if (posActual + 1 < codigoFuente.length) {
@@ -262,12 +271,12 @@ class AnalizadorLexico( val codigoFuente: String)  {
                     return false
                 }
             }
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, lexema, fila, columna))
             return true
         } else if (caracterActual == '*' || caracterActual == '/' || caracterActual == '%') {
             if (posActual + 1 < codigoFuente.length) {
@@ -275,12 +284,12 @@ class AnalizadorLexico( val codigoFuente: String)  {
                     return false
                 }
             }
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.OPERADOR_ARITMETICO, lexema, fila, columna))
             return true
         }
         return false
@@ -294,28 +303,28 @@ class AnalizadorLexico( val codigoFuente: String)  {
      * @return true si pertenece a esta categoria, false en caso contrario
      */
     fun esOperadorRelacional(): Boolean {
-        var palabra: String = ""
+        var lexema: String = ""
         val fila = filaActual
         val columna = colActual
         if (caracterActual == '<' || caracterActual == '>') {
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '=') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, lexema, fila, columna))
             } else {
-                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, lexema, fila, columna))
             }
             return true
         } else if (caracterActual == '!' || caracterActual == '=') {
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '=') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_RELACIONAL, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -337,16 +346,16 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esOperadorLogico(): Boolean {
         if (caracterActual == '&') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '&') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_LOGICO_BINARIO, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_LOGICO_BINARIO, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -356,16 +365,16 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 return false
             }
         } else if (caracterActual == '|') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '|') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_LOGICO_BINARIO, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_LOGICO_BINARIO, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -375,12 +384,12 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 return false
             }
         } else if (caracterActual == '!') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            listaTokens.add(Token(Categoria.OPERADOR_LOGICO_UNARIO, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.OPERADOR_LOGICO_UNARIO, lexema, fila, columna))
             return true
         }
         return false
@@ -394,17 +403,17 @@ class AnalizadorLexico( val codigoFuente: String)  {
      * @return true si pertenece a esta categoria, false en caso contrario
      */
     fun esOperadorDeAsignacion(): Boolean {
-        var palabra: String = ""
+        var lexema: String = ""
         val fila = filaActual
         val columna = colActual
         val aux = posActual
         if (caracterActual == '+' || caracterActual == '-' || caracterActual == '/' || caracterActual == '*' || caracterActual == '%') {
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '=') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_ASIGNACION, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_ASIGNACION, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -414,7 +423,7 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 return false
             }
         } else if (caracterActual == '=') {
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '=') {
                 posActual = aux
@@ -423,7 +432,7 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 caracterActual = codigoFuente[posActual]
                 return false
             } else {
-                listaTokens.add(Token(Categoria.OPERADOR_ASIGNACION, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_ASIGNACION, lexema, fila, columna))
                 return true
             }
         }
@@ -439,17 +448,17 @@ class AnalizadorLexico( val codigoFuente: String)  {
      * @return true si pertenece a esta categoria, false en caso contrario
      */
     fun esOperadorDeIncrementoDecremento(): Boolean {
-        var palabra: String = ""
+        var lexema: String = ""
         val fila = filaActual
         val columna = colActual
         val aux = posActual
         if (caracterActual == '+') {
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '+') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -459,12 +468,12 @@ class AnalizadorLexico( val codigoFuente: String)  {
                 return false
             }
         } else if (caracterActual == '-') {
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '-') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.OPERADOR_INCREMENTO_DECREMENTO, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -588,6 +597,7 @@ class AnalizadorLexico( val codigoFuente: String)  {
         }
         return false
     }
+
     /**
      * metodo que determina si los caracteres que se analizan pertenecen a la
      * categoria Separador, y de ser asi, crea un token con esta categoria y con lo
@@ -613,20 +623,20 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esHexadecimal(): Boolean {
         if (caracterActual == '°') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == 'A' || caracterActual == 'B' || caracterActual == 'C' || caracterActual == 'D' || caracterActual == 'E' || caracterActual == 'F' || Character.isDigit(caracterActual)) {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
                 while (caracterActual == 'A' || caracterActual == 'B' || caracterActual == 'C' || caracterActual == 'D' || caracterActual == 'E' || caracterActual == 'F' || Character.isDigit(caracterActual)) {
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                 }
-                listaTokens.add(Token(Categoria.HEXADECIMAL, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.HEXADECIMAL, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -648,21 +658,21 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esCadenaDeCaracteres(): Boolean {
         if (caracterActual == '~') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             while (caracterActual != '~') {
                 if (caracterActual == finCodigo) {
                     listaDeErrores.add(Error(fila, columna,
-                            " El simbolo '~' de apertura de la cadena de caracteres esta abierto pero nunca fue cerrado"))
+                            " El simbolo '~' de apertura de la cadena de caracteres\n esta abierto pero nunca fue cerrado"))
                     return true
                 } else if (caracterActual == '\\') {
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                     if (caracterActual == '~' || caracterActual == 'b' || caracterActual == 't' || caracterActual == 'f' || caracterActual == 'n' || caracterActual == 'r' || caracterActual == '\\') {
-                        palabra += caracterActual
+                        lexema += caracterActual
                         obtenerSgteCaracter()
                     } else {
                         listaDeErrores.add(Error(fila, columna,
@@ -674,13 +684,13 @@ class AnalizadorLexico( val codigoFuente: String)  {
                                 fila, columna))
                     }
                 } else {
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                 }
             }
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            listaTokens.add(Token(Categoria.CADENA_CARACTERES, palabra, fila, columna))
+            listaTokens.add(Token(Categoria.CADENA_CARACTERES, lexema, fila, columna))
             return true
         }
         return false
@@ -695,91 +705,95 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esCaracter(): Boolean {
         if (caracterActual == '$') {
-            var palabra = ""
+            var lexema = ""
             val fila = filaActual
             val columna = colActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
-            if (caracterActual == finCodigo) {
-                listaTokens.add(Token(Categoria.ERROR,
-                        "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
-                        columna))
-                listaDeErrores.add(Error(fila, columna,
-                        " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
-                return true
-            } else if (caracterActual == '\\') {
-                palabra += caracterActual
-                obtenerSgteCaracter()
+            while (caracterActual != finCodigo) {
                 if (caracterActual == finCodigo) {
                     listaTokens.add(Token(Categoria.ERROR,
-                            "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
-                            fila, columna))
+                            "$lexema El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
+                            columna))
                     listaDeErrores.add(Error(fila, columna,
                             " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
                     return true
-                } else if ((caracterActual == 'n') || (caracterActual == '$') || (caracterActual == 't'
-                                ) || (caracterActual == 'r') || (caracterActual == 'f') || (caracterActual == 'b'
-                                ) || (caracterActual == '\\')) {
-                    palabra += caracterActual
+                } else if (caracterActual == '\\') {
+                    lexema += caracterActual
                     obtenerSgteCaracter()
-                    if (caracterActual == '$') {
-                        palabra += caracterActual
-                        obtenerSgteCaracter()
-                        listaTokens.add(Token(Categoria.CARACTER, palabra, fila, columna))
-                        return true
-                    } else {
-                        listaTokens.add(Token(Categoria.ERROR, (palabra
-                                + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
-                                columna))
-                        listaDeErrores.add(Error(fila, columna,
-                                " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
-                        return true
-                    }
-                } else {
-                    palabra += caracterActual
-                    obtenerSgteCaracter()
-                    if (caracterActual == '$') {
+                    if (caracterActual == finCodigo) {
                         listaTokens.add(Token(Categoria.ERROR,
-                                (palabra + " Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t "
-                                        + '\\' + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")"),
+                                "$lexema El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
                                 fila, columna))
                         listaDeErrores.add(Error(fila, columna,
-                                (" Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t " + '\\'
-                                        + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")")))
-                        obtenerSgteCaracter()
-                        return true
-                    } else {
-                        listaTokens.add(Token(Categoria.ERROR, (palabra
-                                + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
-                                columna))
-                        listaDeErrores.add(Error(fila, columna,
                                 " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                        return true
+                    } else if ((caracterActual == 'n') || (caracterActual == '$') || (caracterActual == 't'
+                                    ) || (caracterActual == 'r') || (caracterActual == 'f') || (caracterActual == 'b'
+                                    ) || (caracterActual == '\\')) {
+                        lexema += caracterActual
                         obtenerSgteCaracter()
+                        if (caracterActual == '$') {
+                            lexema += caracterActual
+                            obtenerSgteCaracter()
+                            listaTokens.add(Token(Categoria.CARACTER, lexema, fila, columna))
+                            return true
+                        } else {
+                            listaTokens.add(Token(Categoria.ERROR, (lexema
+                                    + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
+                                    columna))
+                            listaDeErrores.add(Error(fila, columna,
+                                    " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                            return true
+                        }
+                    } else {
+                        lexema += caracterActual
+                        obtenerSgteCaracter()
+                        if (caracterActual == '$') {
+                            listaTokens.add(Token(Categoria.ERROR,
+                                    (lexema + " Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t "
+                                            + '\\' + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")"),
+                                    fila, columna))
+                            listaDeErrores.add(Error(fila, columna,
+                                    (" Secuencia de escape invalida (las validas son: " + '\\' + "b " + '\\' + "t " + '\\'
+                                            + "n " + '\\' + "f " + '\\' + "r " + '\\' + "$ " + ")")))
+                            obtenerSgteCaracter()
+                            return true
+                        } else {
+                            listaTokens.add(Token(Categoria.ERROR, (lexema
+                                    + " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"), fila,
+                                    columna))
+                            listaDeErrores.add(Error(fila, columna,
+                                    " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
+                            obtenerSgteCaracter()
+                            return true
+                        }
+                    }
+                } else if (caracterActual == '$') {
+                    lexema += caracterActual
+                    obtenerSgteCaracter()
+                    listaTokens.add(Token(Categoria.ERROR, "$lexema El caracter esta vacio", fila, columna))
+                    return true
+                } else {
+                    lexema += caracterActual
+                    obtenerSgteCaracter()
+                    if (caracterActual == finCodigo) {
+                        listaTokens.add(Token(Categoria.ERROR,
+                                "$lexema El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
+                                fila, columna))
+                        return true
+                    } else if (caracterActual == '$') {
+                        lexema += caracterActual
+                        obtenerSgteCaracter()
+                        listaTokens.add(Token(Categoria.CARACTER, lexema, fila, columna))
                         return true
                     }
                 }
-            } else if (caracterActual == '$') {
-                palabra += caracterActual
-                obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.ERROR, "$palabra El caracter esta vacio", fila, columna))
-                return true
-            } else {
-                palabra += caracterActual
-                obtenerSgteCaracter()
-                if (caracterActual == finCodigo) {
-                    listaTokens.add(Token(Categoria.ERROR,
-                            "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado",
-                            fila, columna))
-                    return true
-                } else if (caracterActual == '$') {
-                    palabra += caracterActual
-                    obtenerSgteCaracter()
-                    listaTokens.add(Token(Categoria.CARACTER, palabra, fila, columna))
-                    return true
-                }
                 listaTokens.add(Token(Categoria.ERROR,
-                        "$palabra El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
+                        "$lexema El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado", fila,
                         columna))
+                listaDeErrores.add(Error(fila, columna,
+                        " El simbolo '$' de apertura del caracter esta abierto pero nunca fue cerrado"))
                 return true
             }
         }
@@ -795,26 +809,26 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esComentarioDeLinea(): Boolean {
         if (caracterActual == '¬') {
-            var palabra: String = ""
+            var lexema: String = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '¬') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
                 while (caracterActual != '\n') {
                     if (caracterActual == finCodigo) {
-                        listaTokens.add(Token(Categoria.COMENTARIO_LINEA, palabra, fila, columna))
+                        listaTokens.add(Token(Categoria.COMENTARIO_LINEA, lexema, fila, columna))
                         return true
                     }
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                 }
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
-                listaTokens.add(Token(Categoria.COMENTARIO_LINEA, palabra, fila, columna))
+                listaTokens.add(Token(Categoria.COMENTARIO_LINEA, lexema, fila, columna))
                 return true
             } else {
                 posActual = aux
@@ -836,33 +850,33 @@ class AnalizadorLexico( val codigoFuente: String)  {
      */
     fun esComentarioDeBloque(): Boolean {
         if (caracterActual == '¬') {
-            var palabra = ""
+            var lexema = ""
             val fila = filaActual
             val columna = colActual
             val aux = posActual
-            palabra += caracterActual
+            lexema += caracterActual
             obtenerSgteCaracter()
             if (caracterActual == '*') {
-                palabra += caracterActual
+                lexema += caracterActual
                 obtenerSgteCaracter()
                 while (caracterActual != finCodigo) {
                     if (caracterActual == '*') {
-                        palabra += caracterActual
+                        lexema += caracterActual
                         obtenerSgteCaracter()
                         if (caracterActual == '¬') {
-                            palabra += caracterActual
+                            lexema += caracterActual
                             obtenerSgteCaracter()
-                            listaTokens.add(Token(Categoria.COMENTARIO_BLOQUE, palabra, fila, columna))
+                            listaTokens.add(Token(Categoria.COMENTARIO_BLOQUE, lexema, fila, columna))
                             return true
                         }
-                        palabra += caracterActual
+                        lexema += caracterActual
                         obtenerSgteCaracter()
                     }
-                    palabra += caracterActual
+                    lexema += caracterActual
                     obtenerSgteCaracter()
                 }
                 listaTokens.add(Token(Categoria.ERROR,
-                        "$palabra El comentario de bloque fue abierto pero nunca fue cerrado", fila, columna))
+                        "$lexema El comentario de bloque fue abierto pero nunca fue cerrado", fila, columna))
                 listaDeErrores
                         .add(Error(fila, columna, " El comentario de bloque fue abierto pero nunca fue cerrado"))
                 return true

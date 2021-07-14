@@ -1,6 +1,6 @@
 package lexico
 
-import lexicon.Categoria
+import lexico.Categoria
 
 
 /**
