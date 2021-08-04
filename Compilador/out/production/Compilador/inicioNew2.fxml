@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="661.0" prefWidth="830.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Interfaz.InicioController2">
+   <children>
+      <Button fx:id="btnAnalizar" layoutX="47.0" layoutY="32.0" mnemonicParsing="false" onAction="#analizar" prefHeight="25.0" prefWidth="147.0" text="Analizar Código" />
+      <TextArea fx:id="areaCodigo" layoutX="47.0" layoutY="82.0" prefHeight="265.0" prefWidth="459.0" />
+      <TabPane layoutX="47.0" layoutY="374.0" prefHeight="265.0" prefWidth="459.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Tokens">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tblTokens" prefHeight="237.0" prefWidth="459.0">
+                          <columns>
+                            <TableColumn fx:id="colLexema" prefWidth="142.0" text="Lexema" />
+                            <TableColumn fx:id="colCategoria" prefWidth="128.0" text="Categoria" />
+                              <TableColumn fx:id="colFila" prefWidth="89.0" text="Fila" />
+                              <TableColumn fx:id="colColumna" prefWidth="99.0" text="Columna" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Errores Léxicos">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tblLexico" prefHeight="237.0" prefWidth="459.0">
+                          <columns>
+                            <TableColumn fx:id="colMensajeL" prefWidth="182.0" text="Mensaje " />
+                            <TableColumn fx:id="colFila2" prefWidth="125.0" text="Fila" />
+                              <TableColumn fx:id="colColumna2" prefWidth="151.0" text="Columna" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Errores Sintácticos">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tblSintactico" prefHeight="237.0" prefWidth="459.0">
+                           <columns>
+                              <TableColumn fx:id="colMensajeS" prefWidth="182.0" text="Mensaje " />
+                              <TableColumn fx:id="colFila3" prefWidth="142.0" text="Fila" />
+                              <TableColumn fx:id="colColumna3" prefWidth="134.0" text="Columna" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Errores Semánticos">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label alignment="CENTER" layoutX="230.0" layoutY="6.0" prefHeight="25.0" prefWidth="459.0" text="Mensaje" AnchorPane.bottomAnchor="211.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <TextArea fx:id="txtAreaMensaje" editable="false" layoutY="25.0" prefHeight="211.0" prefWidth="459.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Tabla símbolos">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tblSimbolos" prefHeight="237.0" prefWidth="459.0">
+                           <columns>
+                              <TableColumn fx:id="colNombreSemantico" prefWidth="111.0" text="Nombre" />
+                              <TableColumn fx:id="colTipoSemantico" prefWidth="65.0" text="Tipo" />
+                              <TableColumn fx:id="colFilaSemantico" prefWidth="60.0" text="Fila" />
+                              <TableColumn fx:id="colColumnaSemantico" prefWidth="67.0" text="Columna" />
+                              <TableColumn fx:id="colAmbitoSemantico" prefWidth="68.0" text="Ambito" />
+                              <TableColumn fx:id="colExpresionSemantico" prefWidth="95.0" text="Expresion" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <TreeView fx:id="tree" layoutX="531.0" layoutY="82.0" prefHeight="558.0" prefWidth="269.0" />
+      <Button layoutX="231.0" layoutY="32.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="107.0" text="Traducir" />
+   </children>
+</AnchorPane>
